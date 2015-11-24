@@ -41,7 +41,7 @@ Te.y = train.y(Te.idxs);
 %%
 fprintf('Training simple neural network..\n');
 
-addpath(genpath('DeepLearningToolbox/'));
+addpath(genpath('DeepLearnToolbox/'));
 
 
 rng(8339);  % fix seed, this    NN may be very sensitive to initialization
