@@ -8,6 +8,9 @@ clearvars;
 % Load features and labels of training data
 load train/train.mat;
 
+addpath(genpath('DeepLearnToolbox/'));
+addpath(genpath('PiotrToolbox/'));
+
 %% --browse through the images and look at labels
 for i=1:10
     clf();
@@ -15,11 +18,16 @@ for i=1:10
     % load img
     img = imread( sprintf('train/imgs/train%05d.jpg', i) );
 
+    subplot(121);
     % show img
     imshow(img);
-
     title(sprintf('Label %d', train.y(i)));
 
+    subplot(122);
+    feature = hog( single(img)/255, 17, 8);
+    im( hogDraw(feature) ); colormap gray;
+    axis off; colorbar off;
+    
     pause;  % wait for key, 
 end
 
@@ -40,8 +48,6 @@ Te.y = train.y(Te.idxs);
 
 %%
 fprintf('Training simple neural network..\n');
-
-addpath(genpath('DeepLearnToolbox/'));
 
 
 rng(8339);  % fix seed, this    NN may be very sensitive to initialization
