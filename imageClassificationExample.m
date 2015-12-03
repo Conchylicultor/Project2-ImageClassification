@@ -12,23 +12,26 @@ addpath(genpath('DeepLearnToolbox/'));
 addpath(genpath('PiotrToolbox/'));
 
 %% --browse through the images and look at labels
-for i=1:10
-    clf();
+visualisationActive = false;
+if visualisationActive
+    for i=1:10
+        clf();
 
-    % load img
-    img = imread( sprintf('train/imgs/train%05d.jpg', i) );
+        % load img
+        img = imread( sprintf('train/imgs/train%05d.jpg', i) );
 
-    subplot(121);
-    % show img
-    imshow(img);
-    title(sprintf('Label %d', train.y(i)));
+        subplot(121);
+        % show img
+        imshow(img);
+        title(sprintf('Label %d', train.y(i)));
 
-    subplot(122);
-    feature = hog( single(img)/255, 17, 8);
-    im( hogDraw(feature) ); colormap gray;
-    axis off; colorbar off;
-    
-    pause;  % wait for key, 
+        subplot(122);
+        feature = hog( single(img)/255, 17, 8);
+        im( hogDraw(feature) ); colormap gray;
+        axis off; colorbar off;
+
+        pause;  % wait for key, 
+    end
 end
 
 %% -- Example: split half and half into train/test, use HOG features
@@ -38,12 +41,17 @@ Tr = [];
 Te = [];
 
 % NOTE: you should do this randomly! and k-fold!
-Tr.idxs = 1:2:size(train.X_hog,1);
-Tr.X = train.X_hog(Tr.idxs,:);
+
+% TODO: Randomly select and split the training/testing part:
+
+Tr.idxs = 1:2:size(train.X_cnn,1);
+Tr.X = train.X_cnn(Tr.idxs,:); % Using CNN features instead of Hog seems to work better!
+%Tr.X = [train.X_cnn(Tr.idxs,:)  train.X_hog(Tr.idxs,:)];
 Tr.y = train.y(Tr.idxs);
 
-Te.idxs = 2:2:size(train.X_hog,1);
-Te.X = train.X_hog(Te.idxs,:);
+Te.idxs = 2:2:size(train.X_cnn,1);
+Te.X = train.X_cnn(Te.idxs,:);
+%Te.X = [train.X_cnn(Te.idxs,:)  train.X_hog(Te.idxs,:)];
 Te.y = train.y(Te.idxs);
 
 %%
@@ -55,7 +63,7 @@ rng(8339);  % fix seed, this    NN may be very sensitive to initialization
 % setup NN. The first layer needs to have number of features neurons,
 %  and the last layer the number of classes (here four).
 nn = nnsetup([size(Tr.X,2) 10 4]);
-opts.numepochs =  20;   %  Number of full sweeps through data
+opts.numepochs =  30;   %  Number of full sweeps through data
 opts.batchsize = 100;  %  Take a mean gradient step over this many samples
 
 % if == 1 => plots trainin error as the NN is trained
