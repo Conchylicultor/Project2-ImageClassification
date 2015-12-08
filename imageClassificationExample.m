@@ -137,7 +137,7 @@ for k=1:k_fold
     currentEvaluation = [currentEvaluation ; befErr];
 
     disp(MatrixError);
-    fprintf('\nTesting error: %.2f%%\n\n', predErr * 100 );
+    fprintf('\nTesting error: %.2f%%, %.2f%% (Bef)\n\n', predErr * 100, befErr);
     disp (['Nb of error: ', num2str(sum(classVote ~= Te.y)), '/', num2str(length(classVote))]);
 
 end
