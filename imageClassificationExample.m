@@ -64,6 +64,8 @@ train.features = [train.X_cnn]; % Only CNN (Seems to work better)
 
 %% Train our model (evaluated with cross-validation)
 
+globalEvaluation = []; % Right now, not usefull
+currentEvaluation = [];
 for k=1:k_fold
     fprintf('Training simple neural network..\n');
     
@@ -90,7 +92,7 @@ for k=1:k_fold
     % setup NN. The first layer needs to have number of features neurons,
     %  and the last layer the number of classes (here four).
     nn = nnsetup([size(Tr.X,2) 10 4]);
-    opts.numepochs =  17;   %  Number of full sweeps through data
+    opts.numepochs =  15;   %  Number of full sweeps through data
     opts.batchsize = 100;  %  Take a mean gradient step over this many samples
 
     % if == 1 => plots trainin error as the NN is trained
@@ -127,14 +129,22 @@ for k=1:k_fold
     % get the most likely class
     [~,classVote] = max(nnPred,[],2);
 
-    % get overall error [NOTE!! this is not the BER, you have to write the code
-    %                    to compute the BER!]
-    predErr = sum( classVote ~= Te.y ) / length(Te.y);
+    % Get and plot the errors
+    
+    predErr = sum( classVote ~= Te.y ) / length(Te.y); % Overall error
+    % BER Error
+    
+    currentEvaluation = [currentEvaluation ; predErr];
 
     fprintf('\nTesting error: %.2f%%\n\n', predErr * 100 );
     disp (['Nb of error: ', num2str(sum(classVote ~= Te.y)), '/', num2str(length(classVote))]);
 
 end
+disp(['Current eval: ', num2str(mean(currentEvaluation)) , ' +/- ', num2str(std(currentEvaluation))]) % Disp current evaluation
+
+globalEvaluation = [globalEvaluation currentEvaluation]; % Add the current evaluation
+
+boxplot(globalEvaluation); % Plot all our evaluations
 
 %% End
 return;
