@@ -1,129 +1,100 @@
 clearvars;
-
-% -- GETTING STARTED WITH THE IMAGE CLASSIFICATION DATASET -- %
-% IMPORTANT:
-%    Make sure you downloaded the file train.tar.gz provided to you
-%    and uncompressed it in the same folder as this file resides.
+clear all; close all; clc;
 
 % Load features and labels of training data
 load train/train.mat;
 
-addpath(genpath('DeepLearnToolbox/'));
-addpath(genpath('PiotrToolbox/'));
 
-%% --browse through the images and look at labels
-visualisationActive = false;
-if visualisationActive
-    for i=1:10
-        clf();
-
-        % load img
-        img = imread( sprintf('train/imgs/train%05d.jpg', i) );
-
-        subplot(121);
-        % show img
-        imshow(img);
-        title(sprintf('Label %d', train.y(i)));
-
-        subplot(122);
-        feature = hog( single(img)/255, 17, 8);
-        im( hogDraw(feature) ); colormap gray;
-        axis off; colorbar off;
-
-        pause;  % wait for key, 
-    end
-end
-
-%% -- Example: split half and half into train/test, use HOG features
+%% Randomly permute the data and k-fold
 fprintf('Splitting into train/test..\n');
 
 Tr = [];
 Te = [];
 
-% NOTE: you should do this randomly! and k-fold!
+% Randomly permute the data
+idx = randperm(size(train.X_cnn,1));
+train.X_cnn = train.X_cnn(idx, :);
+train.y = train.y(idx);
 
-% TODO: Randomly select and split the training/testing part:
+% k-fold
+k_fold = 5;
+ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
 
-Tr.idxs = 1:2:size(train.X_cnn,1);
-Tr.X = train.X_cnn(Tr.idxs,:); % Using CNN features instead of Hog seems to work better!
-%Tr.X = [train.X_cnn(Tr.idxs,:)  train.X_hog(Tr.idxs,:)];
-Tr.y = train.y(Tr.idxs);
-
-Te.idxs = 2:2:size(train.X_cnn,1);
-Te.X = train.X_cnn(Te.idxs,:);
-%Te.X = [train.X_cnn(Te.idxs,:)  train.X_hog(Te.idxs,:)];
-Te.y = train.y(Te.idxs);
-
-%%
-fprintf('Training simple neural network..\n');
-
-
-rng(8339);  % fix seed, this    NN may be very sensitive to initialization
-
-% setup NN. The first layer needs to have number of features neurons,
-%  and the last layer the number of classes (here four).
-nn = nnsetup([size(Tr.X,2) 10 4]);
-opts.numepochs =  30;   %  Number of full sweeps through data
-opts.batchsize = 100;  %  Take a mean gradient step over this many samples
-
-% if == 1 => plots trainin error as the NN is trained
-opts.plot               = 1;
-
-nn.learningRate = 2;
-
-% this neural network implementation requires number of samples to be a
-% multiple of batchsize, so we remove some for this to be true.
-numSampToUse = opts.batchsize * floor( size(Tr.X) / opts.batchsize);
-Tr.X = Tr.X(1:numSampToUse,:);
-Tr.y = Tr.y(1:numSampToUse);
-
-% normalize data
-[Tr.normX, mu, sigma] = zscore(Tr.X); % train, get mu and std
-
-% prepare labels for NN
-LL = [1*(Tr.y == 1), ...
-      1*(Tr.y == 2), ...
-      1*(Tr.y == 3), ...
-      1*(Tr.y == 4) ];  % first column, p(y=1)
-                        % second column, p(y=2), etc
-
-[nn, L] = nntrain(nn, Tr.normX, LL, opts);
-
-
-Te.normX = normalize(Te.X, mu, sigma);  % normalize test data
-
-% to get the scores we need to do nnff (feed-forward)
-%  see for example nnpredict().
-% (This is a weird thing of this toolbox)
-nn.testing = 1;
-nn = nnff(nn, Te.normX, zeros(size(Te.normX,1), nn.size(end)));
-nn.testing = 0;
-
-
-% predict on the test set
-nnPred = nn.a{end};
-
-% get the most likely class
-[~,classVote] = max(nnPred,[],2);
-
-% get overall error [NOTE!! this is not the BER, you have to write the code
-%                    to compute the BER!]
-predErr = sum( classVote ~= Te.y ) / length(Te.y);
-
-fprintf('\nTesting error: %.2f%%\n\n', predErr * 100 );
-
-
-%% visualize samples and their predictions (test set)
-figure;
-for i=20:30  % just 10 of them, though there are thousands
-    clf();
-
-    img = imread( sprintf('train/imgs/train%05d.jpg', Te.idxs(i)) );
-    imshow(img);
-
-
-    % show if it is classified as pos or neg, and true label
-    title(sprintf('Label: %d, Pred: %d', train.y(Te.idxs(i)), classVote(i)));
-
-    pause;  % wait for keydo that then, 
+for k = 1:k_fold
+    fprintf('Dividing in two groups train and test set k = %d\n',k);
+    % Generate train and test data : Dividing in two groups train and test set
+    kPermIdx = (ind~=k);
+    
+    % Get the train set
+    Tr.Data = train.X_cnn(kPermIdx,:);
+    Tr.labels = train.y(kPermIdx,:);
+    
+    % Get the test set
+    Te.Data  = train.X_cnn(~kPermIdx,:);
+    Te.labels  = train.y(~kPermIdx,:);
+    
+    %% Perform neural network
+    fprintf('Training simple neural network..\n');
+    
+    rng(8339);  % fix seed, this    NN may be very sensitive to initialization
+    
+    % setup NN. The first layer needs to have number of features neurons,
+    %  and the last layer the number of classes (here four).
+    nn = nnsetup([size(Tr.Data,2) 10 4]);
+    
+    opts.numepochs =  20;   %  Number of full sweeps through data
+    opts.batchsize = 100;  %  Take a mean gradient step over this many samples
+    
+    % if == 1 => plots trainin error as the NN is trained
+    opts.plot               = 1;
+    
+    nn.learningRate = 2;
+    % this neural network implementation requires number of samples to be a
+    % multiple of batchsize, so we remove some for this to be true.
+    numSampToUse = opts.batchsize * floor( size(Tr.Data) / opts.batchsize);
+    Tr.Data = Tr.Data(1:numSampToUse,:);
+    Tr.labels = Tr.labels(1:numSampToUse);
+    
+    % normalize data
+    [Tr.normX, mu, sigma] = zscore(Tr.Data); % train, get mu and std
+    
+    % prepare labels for NN
+    LL = [1*(Tr.labels == 1), ...
+        1*(Tr.labels == 2), ...
+        1*(Tr.labels == 3), ...
+        1*(Tr.labels == 4) ];  % first column, p(y=1)
+    % second column, p(y=2), etc
+    
+    [nn, L] = nntrain(nn, Tr.normX, LL, opts);
+    
+    
+    Te.normX = normalize(Te.Data, mu, sigma);  % normalize test data
+    
+    % to get the scores we need to do nnff (feed-forward)
+    %  see for example nnpredict().
+    % (This is a weird thing of this toolbox)
+    nn.testing = 1;
+    nn = nnff(nn, Te.normX, zeros(size(Te.normX,1), nn.size(end)));
+    nn.testing = 0;
+    
+    
+    % predict on the test set
+    nnPred = nn.a{end};
+    
+    % get the most likely class
+    [~,classVote] = max(nnPred,[],2);
+    
+    % get overall error [NOTE!! this is not the BER, you have to write the code
+    %                    to compute the BER!]
+    predErr = sum( classVote ~= Te.labels ) / length(Te.labels);
+    
+    %% Performance Evaluation BER
+    BER = 0;
+    for c = 1:4
+       BER = BER + sum((classVote == c).*(classVote ~= Te.labels)) / length((classVote == c)); 
+    end
+    BER = BER / 4;
+    fprintf('\nTesting error: %.2f%%\n\n', predErr * 100 );
+    fprintf('\nBER error: %.2f%%\n\n', BER * 100 );
 end
+
