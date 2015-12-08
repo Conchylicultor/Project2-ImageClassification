@@ -132,10 +132,11 @@ for k=1:k_fold
     % Get and plot the errors
     
     predErr = sum( classVote ~= Te.y ) / length(Te.y); % Overall error
-    % BER Error
+    [befErr, MatrixError] = computeBER(classVote , Te.y, 4); % BER Error
     
-    currentEvaluation = [currentEvaluation ; predErr];
+    currentEvaluation = [currentEvaluation ; befErr];
 
+    disp(MatrixError);
     fprintf('\nTesting error: %.2f%%\n\n', predErr * 100 );
     disp (['Nb of error: ', num2str(sum(classVote ~= Te.y)), '/', num2str(length(classVote))]);
 
