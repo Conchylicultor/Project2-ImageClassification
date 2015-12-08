@@ -63,7 +63,7 @@ rng(8339);  % fix seed, this    NN may be very sensitive to initialization
 % setup NN. The first layer needs to have number of features neurons,
 %  and the last layer the number of classes (here four).
 nn = nnsetup([size(Tr.X,2) 10 4]);
-opts.numepochs =  30;   %  Number of full sweeps through data
+opts.numepochs =  17;   %  Number of full sweeps through data
 opts.batchsize = 100;  %  Take a mean gradient step over this many samples
 
 % if == 1 => plots trainin error as the NN is trained
@@ -111,19 +111,30 @@ nnPred = nn.a{end};
 predErr = sum( classVote ~= Te.y ) / length(Te.y);
 
 fprintf('\nTesting error: %.2f%%\n\n', predErr * 100 );
-
+disp (['Nb of error: ', num2str(sum(classVote ~= Te.y)), '/', num2str(length(classVote))]);
 
 %% visualize samples and their predictions (test set)
+
+
+% Plot the errors instead of sucess.
 figure;
-for i=20:30  % just 10 of them, though there are thousands
-    clf();
+PlotErrorContinue = false;
+nbFalseDetection = 0;
+i = 1;
+while nbFalseDetection < 3 % Will crash if we have less than 
 
-    img = imread( sprintf('train/imgs/train%05d.jpg', Te.idxs(i)) );
-    imshow(img);
+    if train.y(Te.idxs(i)) ~= classVote(i) % Plot if different
+        clf();
+        
+        img = imread( sprintf('train/imgs/train%05d.jpg', Te.idxs(i)) );
+        imshow(img);
 
-
-    % show if it is classified as pos or neg, and true label
-    title(sprintf('Label: %d, Pred: %d', train.y(Te.idxs(i)), classVote(i)));
-
-    pause;  % wait for keydo that then, 
+        % show if it is classified as pos or neg, and true label
+        title(sprintf('Label: %d, Pred: %d', train.y(Te.idxs(i)), classVote(i)));
+        
+        nbFalseDetection = nbFalseDetection + 1;
+        pause;  % wait for keydo that then, 
+    end
+    
+    i = i+1;
 end
