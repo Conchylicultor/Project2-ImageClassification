@@ -62,13 +62,27 @@ train.features = [train.X_cnn]; % Only CNN (Seems to work better)
 
 % Normalisation done inside the cross-validation
 
+%% Binary or multiclass classification
+
+taskBinary=true;
+if taskBinary == true
+    disp('------ Binary mode ------');
+    %nbLabel=2; % Only two class
+    labels = [-1 1];
+    
+    train.y(train.y ~= 4) = 1;
+    train.y(train.y == 4) = -1; % -1 ?? Or 0, Or 2 ??
+else
+    disp('------ Multi-class mode ------');
+    %nbLabel=4; % Four differents class
+    labels = [1,2,3,4];
+end
+
 %% Train our model (evaluated with cross-validation)
 
 globalEvaluation = []; % Right now, not usefull
 currentEvaluation = [];
 for k=1:k_fold
-    fprintf('Training simple neural network..\n');
-    
     % Select training/testing
     
     % Generate train and test data : Dividing in two groups train and test set
@@ -88,12 +102,12 @@ for k=1:k_fold
     Te.normX = normalize(Te.X, mu, sigma);  % normalize test data
     
     % Train our model
-    classVote = trainModelNN(Tr, Te);
+    classVote = trainModelNN(Tr, Te, labels);
 
     % Get and plot the errors
     
     predErr = sum( classVote ~= Te.y ) / length(Te.y); % Overall error
-    [befErr, MatrixError] = computeBER(classVote , Te.y, 4); % BER Error
+    [befErr, MatrixError] = computeBER(classVote , Te.y, labels); % BER Error
     
     currentEvaluation = [currentEvaluation ; befErr];
 
