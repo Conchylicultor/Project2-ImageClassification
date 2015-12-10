@@ -104,7 +104,7 @@ for k=1:k_fold
     
     % Train and test our model
     Te.predictions = trainModelNN(Tr, Te, labels);
-    %classVote = trainModelSVM(Tr, Te, labels);
+    %Te.predictions = trainModelSVM(Tr, Te, labels);
 
     % Get and plot the errors
     
