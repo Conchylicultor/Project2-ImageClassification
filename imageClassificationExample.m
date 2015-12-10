@@ -95,27 +95,33 @@ for k=1:k_fold
     % Get the test set
     Te.X  = train.features(~kPermIdx,:);
     Te.y  = train.y(~kPermIdx,:);
+    Te.idxs = idx(~kPermIdx);
 
     
     % Normalize data !!!
     [Tr.normX, mu, sigma] = zscore(Tr.X); % train, get mu and std
     Te.normX = normalize(Te.X, mu, sigma);  % normalize test data
     
-    % Train our model
-    classVote = trainModelNN(Tr, Te, labels);
+    % Train and test our model
+    Te.predictions = trainModelNN(Tr, Te, labels);
+    %classVote = trainModelSVM(Tr, Te, labels);
 
     % Get and plot the errors
     
-    predErr = sum( classVote ~= Te.y ) / length(Te.y); % Overall error
-    [befErr, MatrixError] = computeBER(classVote , Te.y, labels); % BER Error
+    predErr = sum( Te.predictions ~= Te.y ) / length(Te.y); % Overall error
+    [befErr, MatrixError] = computeBER(Te.predictions , Te.y, labels); % BER Error
     
     currentEvaluation = [currentEvaluation ; befErr];
-
+    
     disp(MatrixError);
+    
     fprintf('\nTesting error: %.2f%%, %.2f%% (Bef)\n\n', predErr * 100, befErr);
-    disp (['Nb of error: ', num2str(sum(classVote ~= Te.y)), '/', num2str(length(classVote))]);
+    disp (['Nb of error: ', num2str(sum(Te.predictions ~= Te.y)), '/', num2str(length(Te.predictions))]);
 
+    % Plot the errors images    
+    %visualizeResults(Te);
 end
+disp(currentEvaluation);
 disp(['Current eval: ', num2str(mean(currentEvaluation)) , ' +/- ', num2str(std(currentEvaluation))]) % Disp current evaluation
 
 globalEvaluation = [globalEvaluation currentEvaluation]; % Add the current evaluation
@@ -124,28 +130,3 @@ boxplot(globalEvaluation); % Plot all our evaluations
 
 %% End
 return;
-
-%% visualize samples and their predictions (test set)
-
-% Plot the errors instead of sucess.
-figure;
-PlotErrorContinue = false;
-nbFalseDetection = 0;
-i = 1;
-while nbFalseDetection < 3 % Will crash if we have less than 
-
-    if train.y(Te.idxs(i)) ~= classVote(i) % Plot if different
-        clf();
-        
-        img = imread( sprintf('train/imgs/train%05d.jpg', Te.idxs(i)) );
-        imshow(img);
-
-        % show if it is classified as pos or neg, and true label
-        title(sprintf('Label: %d, Pred: %d', train.y(Te.idxs(i)), classVote(i)));
-        
-        nbFalseDetection = nbFalseDetection + 1;
-        pause;  % wait for keydo that then, 
-    end
-    
-    i = i+1;
-end
