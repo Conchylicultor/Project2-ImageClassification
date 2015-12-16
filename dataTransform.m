@@ -1,14 +1,11 @@
-function [ X_TrainAfter, X_TestAfter ] = dataTransform(X_Train, X_Test)
+function [ X_After ] = dataTransform(X_Before)
 %dataTransform Test some basic maths transformation
 
     % Initialisation
-    X_TrainAfter = [];
-    X_TestAfter = [];
+    X_After = [];
 
-    for i=1:length(X_Train(1,:)) % For each collumn
-        % We add the collumn and eventually apply a transformation
-        X_TrainAfter = [X_TrainAfter basicMath(X_Train(:,i))];
-        X_TestAfter = [X_TestAfter basicMath(X_Test(:,i))];
+    for i=1:length(X_Before(1,:)) % For each collumn
+        X_After = [X_After basicMath(X_Before(:,i))];
     end
 
 end
@@ -23,10 +20,6 @@ function [Y] = basicMath(X)
     %Y = exp(X); % Worst
     %Y = 1./X; % If X = 0 ???
     
-%     if(abs(X) == X) % Only positive values
-%         %Y = sqrt(X); % If X < 0 ???
-%         %Y = log(X); % If X < 0 ???
-%     else
-%         Y = X;
-%     end
+    %Y = sqrt(abs(X));
+    %Y = log(abs(X));
 end

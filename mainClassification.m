@@ -54,12 +54,15 @@ train.y     = train.y    (idx);
 k_fold = 5;
 ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
 
+% Data transformations on the features HoG and CNN directly
+%train.X_cnn = dataTransform(train.X_cnn);
+%train.X_hog = dataTransform(train.X_hog);
+% TODO: ALSO TRANSFORM TEST DATA !!!!!
+
 % Choose our features
 %train.features = [train.X_hog]; % Only HoG
 train.features = [train.X_cnn]; % Only CNN (Seems to work better)
 %train.features = [train.X_cnn train.X_hog]; % CNN + Hog
-
-% TODO: Datatransform ?
 
 % Normalisation done inside the cross-validation
 
@@ -72,7 +75,7 @@ if taskBinary == true
     labels = [0 1];
     
     train.y(train.y ~= 4) = 1;
-    train.y(train.y == 4) = -1; % -1 ?? Or 0, Or 2 ??
+    train.y(train.y == 4) = 0; % -1 ?? Or 0, Or 2 ??
 else
     disp('------ Multi-class mode ------');
     %nbLabel=4; % Four differents class
@@ -125,6 +128,9 @@ for k=1:k_fold
 
     % Plot the errors images    
     %visualizeResults(Te);
+    
+    % Only one (TODO: remove in the final version)
+    return;
 end
 disp(currentEvaluation);
 disp(['Current eval: ', num2str(mean(currentEvaluation)) , ' +/- ', num2str(std(currentEvaluation))]) % Disp current evaluation
