@@ -1,6 +1,9 @@
 function [ X_After ] = dataTransform(X_Before)
 %dataTransform Test some basic maths transformation
 
+    % PCA
+    coeff = pca(X);
+
     % Initialisation
     X_After = [];
 

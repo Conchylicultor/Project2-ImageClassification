@@ -11,19 +11,18 @@ function [ classVote ] = trainModelSVM_multiClass( Tr, Te, labels )
     % Train 2by2 SVM Classifier
     for j = 1:nbClassifier;
         fprintf('Start training class %d\n', labels(j));
-        %indx = strcmp(y,labels(j)*ones(size(y))); % Create binary classes for each classifier
         indx = 1*(Tr.y == labels(j)); % Create binary classes for each classifier
-        SVMModels{j} = fitcsvm(Tr.normX,indx,'ClassNames',[false true],...
-                               'KernelFunction','rbf','BoxConstraint',Inf); % TODO: What is boxconstraint ?
+        SVMModels{j} = fitcsvm(Tr.normX,indx,'ClassNames',[false true]);
     end
    
     fprintf('Predict results:\n');
+    Te.y(1:20,:)
     
     % Predict the data
     Scores = zeros(length(Te.normX(:,1)), nbClassifier);
     %classOther = zeros(length(Te.normX(:,1)), 1); % Not classified
     for j = 1:nbClassifier;
-        fprintf('Prediction class %b:\n', labels(j));
+        fprintf('Prediction class %d:\n', labels(j));
         [class,score] = predict(SVMModels{j}, Te.normX);
         class(1:20,:)
         Scores(:,j) = score(:,2); % Second column contains positive-class scores

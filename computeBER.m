@@ -23,5 +23,5 @@ function [ errorBER, tableError ] = computeBER( classVote, classReal, labels)
     end
     Error = Error';
     tableError = table(labels', Error);
-    errorBER = sum(tableError.Error) / numberClass;
+    errorBER = sum(Error) / numberClass;
 end
