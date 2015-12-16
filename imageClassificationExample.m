@@ -9,8 +9,8 @@ load train/train.mat;
 addpath(genpath('DeepLearnToolbox/'));
 addpath(genpath('PiotrToolbox/'));
 
-%
-% rng(8339);  % fix seed, this    NN may be very sensitive to initialization
+% Do we put the seed before or after the random sorting ?
+% rng(8339);  % fix seed, this NN may be very sensitive to initialization
 
 %% Some visualization --browse through the images and look at labels
 
@@ -68,7 +68,7 @@ taskBinary=true;
 if taskBinary == true
     disp('------ Binary mode ------');
     %nbLabel=2; % Only two class
-    labels = [-1 1];
+    labels = [0 1];
     
     train.y(train.y ~= 4) = 1;
     train.y(train.y == 4) = -1; % -1 ?? Or 0, Or 2 ??
@@ -102,9 +102,14 @@ for k=1:k_fold
     [Tr.normX, mu, sigma] = zscore(Tr.X); % train, get mu and std
     Te.normX = normalize(Te.X, mu, sigma);  % normalize test data
     
+    % Form the tX
+    Tr.normX = [ones(length(Tr.y), 1) Tr.normX];
+    Te.normX = [ones(length(Te.y), 1) Te.normX];
+    
     % Train and test our model
-    Te.predictions = trainModelNN(Tr, Te, labels);
+    %Te.predictions = trainModelNN(Tr, Te, labels);
     %Te.predictions = trainModelSVM(Tr, Te, labels);
+    Te.predictions = trainModelIRLS(Tr, Te, labels);
 
     % Get and plot the errors
     

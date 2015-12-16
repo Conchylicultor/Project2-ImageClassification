@@ -4,7 +4,7 @@ function [ classVote ] = trainModelNN( Tr, Te, labels )
 
     % setup NN. The first layer needs to have number of features neurons,
     %  and the last layer the number of classes (here four).
-    nn = nnsetup([size(Tr.X,2) 15 length(labels)]);
+    nn = nnsetup([size(Tr.normX,2) 15 length(labels)]);
     opts.numepochs =  15;   %  Number of full sweeps through data
     opts.batchsize = 100;  %  Take a mean gradient step over this many samples
 
