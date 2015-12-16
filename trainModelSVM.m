@@ -1,6 +1,6 @@
 function [ classVote ] = trainModelSVM( Tr, Te, labels )
 %trainModelSVM Test with Svm classifier
-    fprintf('Training SVM...\n');
+    fprintf('Training SVM (binary)...\n');
     
     % Train Data
     X = Tr.normX;

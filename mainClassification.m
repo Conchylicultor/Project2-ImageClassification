@@ -57,6 +57,9 @@ ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
 % Data transformations on the features HoG and CNN directly
 %train.X_cnn = dataTransform(train.X_cnn);
 %train.X_hog = dataTransform(train.X_hog);
+
+% Apply PCA
+
 % TODO: ALSO TRANSFORM TEST DATA !!!!!
 
 % Choose our features
@@ -64,11 +67,15 @@ ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
 train.features = [train.X_cnn]; % Only CNN (Seems to work better)
 %train.features = [train.X_cnn train.X_hog]; % CNN + Hog
 
-% Normalisation done inside the cross-validation
+% Normalisation done inside the cross-validation (warning: we need to normalize HoG and CNN independently)
+
+clear train.X_cnn;
+clear train.X_hog; % Free some memory (not needed anymore)
+
 
 %% Binary or multiclass classification
 
-taskBinary=true;
+taskBinary=false;
 if taskBinary == true
     disp('------ Binary mode ------');
     %nbLabel=2; % Only two class
@@ -103,8 +110,12 @@ for k=1:k_fold
 
     
     % Normalize data !!!
-    [Tr.normX, mu, sigma] = zscore(Tr.X); % train, get mu and std
-    Te.normX = normalize(Te.X, mu, sigma);  % normalize test data
+    
+    %[Tr.normX, mu, sigma] = zscore(Tr.X); % train, get mu and std
+    %Te.normX = normalize(Te.X, mu, sigma);  % normalize test data
+    %Te.normX = Te.X / 64; % Simple normalization NON !!!
+    Tr.normX = Tr.X;
+    Te.normX = Te.X;
     
     % Form the tX
     Tr.normX = [ones(length(Tr.y), 1) Tr.normX];
@@ -112,7 +123,8 @@ for k=1:k_fold
     
     % Train and test our model
     %Te.predictions = trainModelNN(Tr, Te, labels);
-    Te.predictions = trainModelSVM(Tr, Te, labels);
+    %Te.predictions = trainModelSVM(Tr, Te, labels);
+    Te.predictions = trainModelSVM_multiClass(Tr, Te, labels);
     %Te.predictions = trainModelIRLS(Tr, Te, labels);
 
     % Get and plot the errors
@@ -127,7 +139,7 @@ for k=1:k_fold
     disp (['Nb of error: ', num2str(sum(Te.predictions ~= Te.y)), '/', num2str(length(Te.predictions))]);
 
     % Plot the errors images    
-    %visualizeResults(Te);
+    visualizeResults(Te);
     
     % Only one (TODO: remove in the final version)
     return;
