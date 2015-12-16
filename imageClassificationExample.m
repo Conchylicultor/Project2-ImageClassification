@@ -2,6 +2,7 @@
 
 clearvars;
 close all;
+clc;
 
 % Load features and labels of training data
 load train/train.mat;
@@ -108,11 +109,10 @@ for k=1:k_fold
     
     % Train and test our model
     %Te.predictions = trainModelNN(Tr, Te, labels);
-    %Te.predictions = trainModelSVM(Tr, Te, labels);
-    Te.predictions = trainModelIRLS(Tr, Te, labels);
+    Te.predictions = trainModelSVM(Tr, Te, labels);
+    %Te.predictions = trainModelIRLS(Tr, Te, labels);
 
     % Get and plot the errors
-    
     predErr = sum( Te.predictions ~= Te.y ) / length(Te.y); % Overall error
     [befErr, MatrixError] = computeBER(Te.predictions , Te.y, labels); % BER Error
     
