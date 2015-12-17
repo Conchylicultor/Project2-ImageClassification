@@ -9,14 +9,12 @@ function [ classVote ] = trainModelSVM( Tr, Te, labels )
     % Train an SVM Classifier using the radial basis kernel.
     % Auto find a scale value for the kernel function
     % Standardize the predictors
-    SVMModel = fitcsvm(X,y,'KernelFunction','RBF','KernelScale','auto', 'BoxConstraint', Inf);
-    
-    % Cross validate the SVM Classifier
-    % default : 10-fold cross validation 
-    %CVSVMModel = crossval(SVMModel);
-    
-    % Estimate the out-of-sample missclassification rate
-    %classLoss = kfoldLoss(CVSVMModel)
+   
+    % Linear
+    %SVMModel = fitcsvm(X,y);
+
+    % Polynomial
+    SVMModel = fitcsvm(X,y,'KernelFunction','polynomial','PolynomialOrder',2);
    
     % Predict the data
     [classVote, score] = predict(SVMModel, Te.normX);
