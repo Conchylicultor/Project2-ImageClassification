@@ -48,9 +48,9 @@ end
 %train.X_cnn = dataTransform(train.X_cnn);
 %train.X_hog = dataTransform(train.X_hog);
 
-size(train.X_cnn)
-pcaToSave = train.X_cnn;
-save('afterPca', 'pcaToSave');
+% size(train.X_cnn)
+% pcaToSave = train.X_cnn;
+% save('afterPca', 'pcaToSave');
 
 %% Divide our dataset bewteen training/testing set AND select features
 
@@ -83,7 +83,7 @@ clear train.X_hog; % Free some memory (not needed anymore)
 
 %% Binary or multiclass classification
 
-taskBinary=true;
+taskBinary=false;
 if taskBinary == true
     disp('------ Binary mode ------');
     %nbLabel=2; % Only two class
@@ -131,8 +131,9 @@ for k=1:k_fold
     
     % Train and test our model
     %Te.predictions = trainModelNN(Tr, Te, labels);
-    Te.predictions = trainModelSVM(Tr, Te, labels);
-    %Te.predictions = trainModelSVM_multiClass(Tr, Te, labels);
+    %Te.predictions = trainModelSVM(Tr, Te, labels);
+    Te.predictions = trainModelSVM_multiClassOvO(Tr, Te, labels);
+    %Te.predictions = trainModelSVM_multiClassOvA(Tr, Te, labels);
     %Te.predictions = trainModelIRLS(Tr, Te, labels);
 
     % Get and plot the errors

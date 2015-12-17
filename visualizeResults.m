@@ -5,7 +5,7 @@ function visualizeResults( Te )
     figure(1000);
     nbFalseDetection = 0;
     i = 1;
-    while nbFalseDetection < 4 % Will crash if we have less than this number of error
+    while nbFalseDetection < nbImgToPlot % Will crash if we have less than this number of error
 
         if Te.y(i) ~= Te.predictions(i) % Plot if different
             clf();
@@ -14,13 +14,16 @@ function visualizeResults( Te )
             imshow(img);
 
             % show if it is classified as pos or neg, and true label
-            title(sprintf('Label: %d, Pred: %d', Te.y(i), Te.predictions(i)));
+            title(sprintf('%05d: Label: %d, Pred: %d', Te.idxs(i), Te.y(i), Te.predictions(i)));
 
             nbFalseDetection = nbFalseDetection + 1;
             pause;  % wait for keydo that then, 
         end
 
         i = i+1;
+        if (i > length(Te.y(i)))
+            nbFalseDetection = nbImgToPlot +1; % Exit
+        end
     end
 
 end
