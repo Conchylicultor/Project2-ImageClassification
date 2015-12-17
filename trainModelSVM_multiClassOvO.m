@@ -1,4 +1,4 @@
-function [ classVote ] = trainModelSVM_multiClassOvO( Tr, Te, labels )
+function [ classVoteTr classVoteTe ] = trainModelSVM_multiClassOvO( Tr, Te, labels )
 %trainModelSVM Test with Svm classifier
     fprintf('Training SVM (multi class), OvsO...\n');
     assert(length(labels) > 2, 'Error, trying to apply multiclass to binary');
@@ -9,7 +9,8 @@ function [ classVote ] = trainModelSVM_multiClassOvO( Tr, Te, labels )
     fprintf('Training %d classifiers\n', nbClassifier);
     
     % Contain the predictions
-    Scores = zeros(length(Te.normX(:,1)), length(labels));
+    ScoresTr = zeros(length(Tr.normX(:,1)), length(labels));
+    ScoresTe = zeros(length(Te.normX(:,1)), length(labels));
     
     % Train One vs One SVM Classifier
     for i = 1:length(labels);
@@ -36,10 +37,13 @@ function [ classVote ] = trainModelSVM_multiClassOvO( Tr, Te, labels )
             % Testing
             fprintf('Prediction class %d vs %d:\n', labels(i), labels(j));
             
-            [class,~] = predict(SVMModel, Te.normX);
+            [class,~] = predict(SVMModel, Tr.normX);
+            ScoresTr(class == 1, i) = ScoresTr(class == 1, i) + 1; % Winner is i
+            ScoresTr(class == 0, j) = ScoresTr(class == 0, j) + 1; % Otherwise winner is j
             
-            Scores(class == 1, i) = Scores(class == 1, i) + 1; % Winner is i
-            Scores(class == 0, j) = Scores(class == 0, j) + 1; % Otherwise winner is j
+            [class,~] = predict(SVMModel, Te.normX);
+            ScoresTe(class == 1, i) = ScoresTe(class == 1, i) + 1; % Winner is i
+            ScoresTe(class == 0, j) = ScoresTe(class == 0, j) + 1; % Otherwise winner is j
             
             % Save the svm ?
             %save([], );
@@ -47,10 +51,11 @@ function [ classVote ] = trainModelSVM_multiClassOvO( Tr, Te, labels )
     end
     
     % Choose the best class
-    [~,classVote] = max(Scores,[],2);
+    [~,classVoteTe] = max(ScoresTe,[],2);
+    [~,classVoteTr] = max(ScoresTr,[],2);
     
-    Scores(1:20,:)
-    [Te.y(1:20,:) classVote(1:20,:)]
+    %Scores(1:20,:)
+    %[Te.y(1:20,:) classVote(1:20,:)]
         
 end
 
