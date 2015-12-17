@@ -5,6 +5,7 @@ close all;
 clc;
 
 % Load features and labels of training data
+fprintf('Loading data...\n');
 load train/train.mat;
 
 addpath(genpath('DeepLearnToolbox/'));
@@ -37,6 +38,20 @@ if visualisationActive
     end
 end
 
+%% Feature transformations
+
+% Apply PCA
+
+% TODO: ALSO TRANSFORM TEST DATA !!!!!
+
+% Data transformations on the features HoG and CNN directly
+%train.X_cnn = dataTransform(train.X_cnn);
+%train.X_hog = dataTransform(train.X_hog);
+
+size(train.X_cnn)
+pcaToSave = train.X_cnn;
+save('afterPca', 'pcaToSave');
+
 %% Divide our dataset bewteen training/testing set AND select features
 
 fprintf('Splitting into train/test..\n');
@@ -54,13 +69,6 @@ train.y     = train.y    (idx);
 k_fold = 5;
 ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
 
-% Data transformations on the features HoG and CNN directly
-%train.X_cnn = dataTransform(train.X_cnn);
-%train.X_hog = dataTransform(train.X_hog);
-
-% Apply PCA
-
-% TODO: ALSO TRANSFORM TEST DATA !!!!!
 
 % Choose our features
 %train.features = [train.X_hog]; % Only HoG
@@ -75,7 +83,7 @@ clear train.X_hog; % Free some memory (not needed anymore)
 
 %% Binary or multiclass classification
 
-taskBinary=false;
+taskBinary=true;
 if taskBinary == true
     disp('------ Binary mode ------');
     %nbLabel=2; % Only two class
@@ -123,8 +131,8 @@ for k=1:k_fold
     
     % Train and test our model
     %Te.predictions = trainModelNN(Tr, Te, labels);
-    %Te.predictions = trainModelSVM(Tr, Te, labels);
-    Te.predictions = trainModelSVM_multiClass(Tr, Te, labels);
+    Te.predictions = trainModelSVM(Tr, Te, labels);
+    %Te.predictions = trainModelSVM_multiClass(Tr, Te, labels);
     %Te.predictions = trainModelIRLS(Tr, Te, labels);
 
     % Get and plot the errors

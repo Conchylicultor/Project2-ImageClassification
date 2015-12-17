@@ -1,4 +1,4 @@
-function [U,mu,vars] = pca( X )
+function [U,mu,vars] = pca2( X )
 % Principal components analysis (alternative to princomp).
 %
 % A simple linear dimensionality reduction technique. Use to create an
@@ -56,7 +56,7 @@ X = bsxfun(@minus,X,mu)/sqrt(n-1);
 X = reshape( X, d, n );
 
 % make sure X not too large or SVD slow O(min(d,n)^2.5)
-m=2500; if( min(d,n)>m ), X=X(:,randperm(n,m)); n=m; end
+m=5000; if( min(d,n)>m ), X=X(:,randperm(n,m)); n=m; end
 
 % get principal components using the SVD of X: X=U*S*V'
 if( 0 )

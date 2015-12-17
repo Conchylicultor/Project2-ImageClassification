@@ -1,6 +1,7 @@
 function [ classVote ] = trainModelSVM_multiClass( Tr, Te, labels )
 %trainModelSVM Test with Svm classifier
     fprintf('Training SVM (multi class)...\n');
+    assert(length(labels) > 2, 'Error, trying to apply multiclass to binary');
     
     nbClassifier = length(labels);
     
