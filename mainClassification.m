@@ -138,13 +138,13 @@ for k=1:k_fold
 
     % Get and plot the errors
     predErr = sum( Te.predictions ~= Te.y ) / length(Te.y); % Overall error
-    [befErr, MatrixError] = computeBER(Te.predictions , Te.y, labels); % BER Error
+    [berErr, MatrixError] = computeBER(Te.predictions , Te.y, labels); % BER Error
     
-    currentEvaluation = [currentEvaluation ; befErr];
+    currentEvaluation = [currentEvaluation ; berErr];
     
     disp(MatrixError);
     
-    fprintf('\nTesting error: %.2f%%, %.2f%% (Bef)\n\n', predErr * 100, befErr);
+    fprintf('\nTesting error: %.2f%%, %.2f%% (Ber)\n\n', predErr * 100, berErr);
     disp (['Nb of error: ', num2str(sum(Te.predictions ~= Te.y)), '/', num2str(length(Te.predictions))]);
 
     % Plot the errors images    

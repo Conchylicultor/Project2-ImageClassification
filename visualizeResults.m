@@ -1,6 +1,8 @@
 function visualizeResults( Te )
 %visualizeResults Show some exmple of false results
 
+    nbImgToPlot = 30;
+    
     % Plot the errors instead of sucess.
     figure(1000);
     nbFalseDetection = 0;
@@ -21,7 +23,7 @@ function visualizeResults( Te )
         end
 
         i = i+1;
-        if (i > length(Te.y(i)))
+        if (i > length(Te.y))
             nbFalseDetection = nbImgToPlot +1; % Exit
         end
     end
