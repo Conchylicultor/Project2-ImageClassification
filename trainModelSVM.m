@@ -1,4 +1,4 @@
-function [ classVote ] = trainModelSVM( Tr, Te, labels )
+function [ classVoteTr classVoteTe ] = trainModelSVM( Tr, Te, labels )
 %trainModelSVM Test with Svm classifier
     fprintf('Training SVM (binary)...\n');
     
@@ -14,9 +14,10 @@ function [ classVote ] = trainModelSVM( Tr, Te, labels )
     %SVMModel = fitcsvm(X,y);
 
     % Polynomial
-    SVMModel = fitcsvm(X,y,'KernelFunction','polynomial','PolynomialOrder',2);
+    SVMModel = fitcsvm(X,y);
    
     % Predict the data
-    [classVote, score] = predict(SVMModel, Te.normX);
+    [classVoteTr, score] = predict(SVMModel, Tr.normX);
+    [classVoteTe, score] = predict(SVMModel, Te.normX);
 end
 
