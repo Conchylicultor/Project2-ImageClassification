@@ -172,6 +172,11 @@ for param = 2:10 % Choose the param for which we are doing the cross validation 
         
         save('recodingCurrentTr', 'currentEvaluationTr');
         save('recodingCurrentTe', 'currentEvaluationTe');
+        
+        % We only do it twice
+        if k == 2
+            break;
+        end
     end
     disp(currentEvaluationTe);
     disp(['Current eval: ', num2str(mean(currentEvaluationTe)) , ' +/- ', num2str(std(currentEvaluationTe))]) % Disp current evaluation
