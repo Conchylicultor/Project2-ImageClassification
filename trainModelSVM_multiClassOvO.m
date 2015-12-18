@@ -32,7 +32,7 @@ function [ classVoteTr classVoteTe ] = trainModelSVM_multiClassOvO( Tr, Te, labe
             %ytrain(1:20)
             
             % Training
-            SVMModel = fitcsvm(Xtrain,double(ytrain),'ClassNames',[false true]);
+            SVMModel = fitcsvm(Xtrain,double(ytrain),'ClassNames',[0 1]);
             
             % Testing
             fprintf('Prediction class %d vs %d:\n', labels(i), labels(j));

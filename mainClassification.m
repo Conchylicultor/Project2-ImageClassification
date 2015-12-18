@@ -101,11 +101,13 @@ end
 globalEvaluationTe = []; % Store our results
 globalEvaluationTr = []; % Store our results
 
-for param = 2:10 % Choose the param for which we are doing the cross validation !!!!!!
+for param = [1 2] % Choose the param for which we are doing the cross validation !!!!!!
     fprintf('Test param %f:\n', param);
     
     % Here we test the number of training sample (k_fold)
-    k_fold = param;
+    
+    k_fold = 5;
+    limitKfold = false; % Only compute the two first
     ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
     
     
@@ -142,8 +144,12 @@ for param = 2:10 % Choose the param for which we are doing the cross validation 
 
         % Train and test our model
         %Te.predictions = trainModelNN(Tr, Te, labels);
-        %Te.predictions = trainModelSVM(Tr, Te, labels);
-        [Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
+        %[Tr.predictions, Te.predictions] = trainModelSVM(Tr, Te, labels, param);
+        if param == 1
+            [Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvA(Tr, Te, labels);
+        else
+            [Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
+        end
         %Te.predictions = trainModelSVM_multiClassOvA(Tr, Te, labels);
         %Te.predictions = trainModelIRLS(Tr, Te, labels);
 
@@ -174,7 +180,7 @@ for param = 2:10 % Choose the param for which we are doing the cross validation 
         save('recodingCurrentTe', 'currentEvaluationTe');
         
         % We only do it twice
-        if k == 2
+        if limitKfold && k == 2
             break;
         end
     end
