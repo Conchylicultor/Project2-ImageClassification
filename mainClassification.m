@@ -12,7 +12,7 @@ addpath(genpath('DeepLearnToolbox/'));
 addpath(genpath('PiotrToolbox/'));
 
 % Do we put the seed before or after the random sorting ?
-% rng(8339);  % fix seed, this NN may be very sensitive to initialization
+
 
 %% Some visualization --browse through the images and look at labels
 
@@ -79,7 +79,9 @@ clear train.X_hog; % Free some memory (not needed anymore)
 
 %% Binary or multiclass classification
 
-taskBinary=false;
+rng(666);  % fix seed, this NN may be very sensitive to initialization
+
+taskBinary=true;
 if taskBinary == true
     disp('------ Binary mode ------');
     %nbLabel=2; % Only two class
@@ -101,13 +103,13 @@ end
 globalEvaluationTe = []; % Store our results
 globalEvaluationTr = []; % Store our results
 
-for param = [1 2] % Choose the param for which we are doing the cross validation !!!!!!
+for param = 0.1:0.1:0.8 % Choose the param for which we are doing the cross validation !!!!!!
     fprintf('Test param %f:\n', param);
     
     % Here we test the number of training sample (k_fold)
     
     k_fold = 5;
-    limitKfold = false; % Only compute the two first
+    limitKfold = true; % Only compute the x first (or not)
     ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
     
     
@@ -143,13 +145,10 @@ for param = [1 2] % Choose the param for which we are doing the cross validation
         Te.normX = [ones(length(Te.y), 1) Te.normX];
 
         % Train and test our model
-        %Te.predictions = trainModelNN(Tr, Te, labels);
+        [Tr.predictions, Te.predictions] = trainModelNN(Tr, Te, labels, param);
         %[Tr.predictions, Te.predictions] = trainModelSVM(Tr, Te, labels, param);
-        if param == 1
-            [Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvA(Tr, Te, labels);
-        else
-            [Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
-        end
+        %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvA(Tr, Te, labels);
+        %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
         %Te.predictions = trainModelSVM_multiClassOvA(Tr, Te, labels);
         %Te.predictions = trainModelIRLS(Tr, Te, labels);
 
@@ -179,8 +178,10 @@ for param = [1 2] % Choose the param for which we are doing the cross validation
         save('recodingCurrentTr', 'currentEvaluationTr');
         save('recodingCurrentTe', 'currentEvaluationTe');
         
+        close figure 1;
+        
         % We only do it twice
-        if limitKfold && k == 2
+        if limitKfold && k == 3
             break;
         end
     end
