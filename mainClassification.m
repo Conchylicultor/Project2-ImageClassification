@@ -4,12 +4,23 @@ clearvars;
 close all;
 clc;
 
+% Parametters
+finalPredictions = true; % Applying model to the test data or not
+taskBinary=false; % Binary or multiclass
+
+
 % Load features and labels of training data
 fprintf('Loading data...\n');
 load train/train.mat;
 
 addpath(genpath('DeepLearnToolbox/'));
 addpath(genpath('PiotrToolbox/'));
+
+
+
+if finalPredictions
+    load train/test.mat; % 
+end
 
 % Do we put the seed before or after the random sorting ?
 
@@ -41,6 +52,7 @@ end
 %% Feature transformations
 
 % Apply PCA
+% Here we can apply pca on both training/testing data because we don't want to predict
 
 % TODO: ALSO TRANSFORM TEST DATA !!!!!
 
@@ -71,6 +83,11 @@ train.y     = train.y    (idx);
 train.features = [train.X_cnn]; % Only CNN (Seems to work better)
 %train.features = [train.X_cnn train.X_hog]; % CNN + Hog
 
+if finalPredictions
+    disp('------ Final mode ------');
+    test.features = [test.X_cnn]; % WARNING: SAME AS ABOVE
+end
+
 % Normalisation done inside the cross-validation (warning: we need to normalize HoG and CNN independently)
 
 clear train.X_cnn;
@@ -81,7 +98,6 @@ clear train.X_hog; % Free some memory (not needed anymore)
 
 rng(666);  % fix seed, this NN may be very sensitive to initialization
 
-taskBinary=true;
 if taskBinary == true
     disp('------ Binary mode ------');
     %nbLabel=2; % Only two class
@@ -104,14 +120,12 @@ globalEvaluationTe = []; % Store our results
 globalEvaluationTr = []; % Store our results
 
 for param = 0.1:0.1:0.8 % Choose the param for which we are doing the cross validation !!!!!!
-    fprintf('Test param %f:\n', param);
+    fprintf('Test param %f:\n', param); % WARNING: FOR THE FINAL RUN, MANUALLY TUNE THE PARAM
     
-    % Here we test the number of training sample (k_fold)
-    
+    % Choosing the number of kfold (not used in the final run)
     k_fold = 5;
     limitKfold = true; % Only compute the x first (or not)
     ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
-    
     
     currentEvaluationTe = [];
     currentEvaluationTr = [];
@@ -119,39 +133,60 @@ for param = 0.1:0.1:0.8 % Choose the param for which we are doing the cross vali
         fprintf('Kfold %d/%d:\n', k, k_fold);
         % Select training/testing
 
-        % Generate train and test data : Dividing in two groups train and test set
-        kPermIdx = (ind~=k);
-
-        % Get the train set
-        Tr.X = train.features(kPermIdx,:); % Data (features)
-        Tr.y = train.y(kPermIdx,:); % Labels
-
-        % Get the test set
-        Te.X  = train.features(~kPermIdx,:);
-        Te.y  = train.y(~kPermIdx,:);
-        Te.idxs = idx(~kPermIdx);
-
+        if ~finalPredictions
+            % Generate train and test data : Dividing in two groups train and test set
+            kPermIdx = (ind~=k);
+            
+            % Get the train set
+            Tr.X = train.features(kPermIdx,:); % Data (features)
+            Tr.y = train.y(kPermIdx,:); % Labels
+            
+            % Get the test set
+            Te.X  = train.features(~kPermIdx,:);
+            Te.y  = train.y(~kPermIdx,:);
+            Te.idxs = idx(~kPermIdx);
+        else
+            % We take it all
+            Tr.X = train.features;
+            Tr.y = train.y;
+            
+            % 
+            Te.X = test.features;
+            
+            % Free memory:
+            clear test;
+            clear train;
+        end
 
         % Normalize data !!!
 
         %[Tr.normX, mu, sigma] = zscore(Tr.X); % train, get mu and std
         %Te.normX = normalize(Te.X, mu, sigma);  % normalize test data
-        %Te.normX = Te.X / 64; % Simple normalization NON !!!
+        
         Tr.normX = Tr.X;
         Te.normX = Te.X;
+        
+        if finalPredictions
+            Tr.X = 0;
+            Te.X = 0; % Not needed anymore: Clear memory
+        end
 
         % Form the tX
         Tr.normX = [ones(length(Tr.y), 1) Tr.normX];
-        Te.normX = [ones(length(Te.y), 1) Te.normX];
+        Te.normX = [ones(length(Te.normX(:,1)), 1) Te.normX];
 
         % Train and test our model
-        [Tr.predictions, Te.predictions] = trainModelNN(Tr, Te, labels, param);
+        %[Tr.predictions, Te.predictions] = trainModelNN(Tr, Te, labels, param);
         %[Tr.predictions, Te.predictions] = trainModelSVM(Tr, Te, labels, param);
         %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvA(Tr, Te, labels);
-        %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
+        [Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
         %Te.predictions = trainModelSVM_multiClassOvA(Tr, Te, labels);
         %Te.predictions = trainModelIRLS(Tr, Te, labels);
 
+        if finalPredictions
+            return; % No need to go futher
+        end
+        
         % Get and plot the errors
         fprintf('\n');
         
