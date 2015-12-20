@@ -178,14 +178,18 @@ for param = 0.1:0.1:0.8 % Choose the param for which we are doing the cross vali
         Te.normX = [ones(length(Te.normX(:,1)), 1) Te.normX];
 
         % Train and test our model
-        [Tr.predictions, Te.predictions] = trainModelNN(Tr, Te, labels, param);
-        %[Tr.predictions, Te.predictions] = trainModelSVM(Tr, Te, labels, param);
-        %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvA(Tr, Te, labels);
-        %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
-        %Te.predictions = trainModelSVM_multiClassOvA(Tr, Te, labels);
-        %Te.predictions = trainModelIRLS(Tr, Te, labels);
+        if taskBinary
+            [Tr.predictions, Te.predictions] = trainModelNN(Tr, Te, labels, param);
+            %[Tr.predictions, Te.predictions] = trainModelSVM(Tr, Te, labels, param);
+        else
+            %[Tr.predictions, Te.predictions] = trainModelNN(Tr, Te, labels, param); % NN works for both
+            %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvA(Tr, Te, labels);
+            [Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
+            %Te.predictions = trainModelIRLS(Tr, Te, labels);
+        end
 
         if finalPredictions
+            disp('Prediction finished!');
             return; % No need to go futher
         end
         
