@@ -5,7 +5,8 @@ function [ X_After ] = dataTransform(X_Before)
     disp('Apply PCA');
     
     size(X_Before)
-    coeff = pca2(X_Before'); % Call inside the deep toolbox
+    %coeff = pca2(X_Before'); % Call inside the deep toolbox
+    coeff = pca(X_Before); % Call inside the deep toolbox
     size(coeff)
     X_After = X_Before * coeff; % maxDim = 5000
     %X_After = X_Before * coeff(1:(size(coeff,2)/2));
