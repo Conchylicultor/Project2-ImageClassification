@@ -1,7 +1,7 @@
-function [ classVoteTr classVoteTe ] = trainModelSVM( Tr, Te, labels, degreePoly )
+function [ classVoteTr classVoteTe ] = trainModelSVM( Tr, Te, labels, param )
 %trainModelSVM Test with Svm classifier
     fprintf('Training SVM (binary)...\n');
-    assert(length(labels) == 2, 'Error, trying to apply binary to multiclass');
+    %assert(length(labels) == 2, 'Error, trying to apply binary to multiclass');
     
     % Train Data
     X = Tr.normX;
@@ -12,11 +12,14 @@ function [ classVoteTr classVoteTe ] = trainModelSVM( Tr, Te, labels, degreePoly
     % Standardize the predictors
    
     % Linear
-    %SVMModel = fitcsvm(X,y);
+    SVMModel = fitcsvm(X,y,'BoxConstraint',900,'Nu',param);
 
     % Polynomial
-    SVMModel = fitcsvm(X,y,'KernelFunction','polynomial','PolynomialOrder', degreePoly);
+    %SVMModel = fitcsvm(X,y,'KernelFunction','polynomial','PolynomialOrder', 2,'BoxConstraint', param);
    
+    % Gaussian
+    %SVMModel = fitcsvm(X,y,'KernelFunction','rbf','KernelScale','auto','BoxConstraint', param);
+    
     % Predict the data
     [classVoteTr, score] = predict(SVMModel, Tr.normX);
     [classVoteTe, score] = predict(SVMModel, Te.normX);

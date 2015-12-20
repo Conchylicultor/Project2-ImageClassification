@@ -3,12 +3,12 @@ function [] = plotConfusionMatrix( classVote, classReal )
 %   Detailed explanation goes here
 
 N = length(classVote);
-targets = zeros(4,N);
-outputs = zeros(4,N);
+targets = zeros(2,N);
+outputs = zeros(2,N);
 
 for k = 1:N
-    targets(classReal(k),k) = 1;
-    outputs(classVote(k),k) = 1;
+    targets(classReal(k)+1,k) = 1;
+    outputs(classVote(k)+1,k) = 1;
 end
 
 
