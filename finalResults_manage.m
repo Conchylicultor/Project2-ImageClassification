@@ -17,5 +17,6 @@ h = legend('Training', 'Predicted');
 h.Location = 'northwest';
 
 colormap('summer');
-save('pred_multiclass', 'Ytest');
+%save('pred_binary', 'Ytest');
+%save('pred_multiclass', 'Ytest');
 

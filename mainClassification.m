@@ -6,7 +6,7 @@ clc;
 
 % Parametters
 finalPredictions = true; % Applying model to the test data or not
-taskBinary=false; % Binary or multiclass
+taskBinary=true; % Binary or multiclass
 
 
 % Load features and labels of training data
@@ -119,12 +119,14 @@ end
 globalEvaluationTe = []; % Store our results
 globalEvaluationTr = []; % Store our results
 
+
+
 for param = 0.1:0.1:0.8 % Choose the param for which we are doing the cross validation !!!!!!
     fprintf('Test param %f:\n', param); % WARNING: FOR THE FINAL RUN, MANUALLY TUNE THE PARAM
     
     % Choosing the number of kfold (not used in the final run)
     k_fold = 5;
-    limitKfold = true; % Only compute the x first (or not)
+    limitKfold = false; % Only compute the x first (or not)
     ind = crossvalind('Kfold', size(train.X_cnn,1), k_fold);
     
     currentEvaluationTe = [];
@@ -176,10 +178,10 @@ for param = 0.1:0.1:0.8 % Choose the param for which we are doing the cross vali
         Te.normX = [ones(length(Te.normX(:,1)), 1) Te.normX];
 
         % Train and test our model
-        %[Tr.predictions, Te.predictions] = trainModelNN(Tr, Te, labels, param);
+        [Tr.predictions, Te.predictions] = trainModelNN(Tr, Te, labels, param);
         %[Tr.predictions, Te.predictions] = trainModelSVM(Tr, Te, labels, param);
         %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvA(Tr, Te, labels);
-        [Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
+        %[Tr.predictions, Te.predictions] = trainModelSVM_multiClassOvO(Tr, Te, labels);
         %Te.predictions = trainModelSVM_multiClassOvA(Tr, Te, labels);
         %Te.predictions = trainModelIRLS(Tr, Te, labels);
 
